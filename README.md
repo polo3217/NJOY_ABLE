@@ -34,6 +34,6 @@ To provide a macroscopic view of the nuclear data processing pipeline. This allo
 │   └── gui_components/         # UI Widgets and Helpers
 │
 ├── file_comparison_app/        # Analysis Utility
-│   └── main.py                 # Standalone Diff Tool for Output Files
+│   └── comp.py                 # Standalone Diff Tool for Output Files (Spot differences in output files)
 │
 └── README.md                   # Project Documentation
