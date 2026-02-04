@@ -82,6 +82,8 @@ python main.py
 ├── file_comparison_app/        # Analysis Utility
 │   └── comp.py                 # Standalone Diff Tool
 │
+├── output_exemple/             # Exemple of NJOY_ABLE output
+│
 └── README.md
 ```
 
