@@ -52,11 +52,6 @@ allowing users to verify processing-chain coherence.
 git clone https://github.com/polo3217/NJOY_ABLE.git
 cd NJOY_Able
 
-python -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
-
-pip install -r requirements.txt
-
 cd src
 python main.py
 ```
@@ -130,8 +125,8 @@ NJOY's logical structure:
 
     NjoyInputGUI → NjoyModule → NjoyCard → NjoyInput
 
--   **NjoyInput**: Fundamental parameter with validation logic\
--   **NjoyCard**: Logical input block with conditional visibility\
+-   **NjoyInput**: Fundamental parameter with validation logic
+-   **NjoyCard**: Logical input block with conditional visibility
 -   **NjoyModule**: NJOY processing unit implementing `regenerate()` and
     `write()`
 
@@ -143,14 +138,23 @@ parameters, enabling adaptive inputs and automated consistency checks.
 
 ## Contribution Guidelines
 
-Contributions and feedback are very welcome, including:
+Contributions and feedbacks are very welcome, including:
 
 -   GUI improvements
 -   Additional NJOY modules (e.g., LEAPR)
 -   Documentation enhancements
 
 
+------------------------------------------------------------------------
 
+
+
+## Disclaimer
+
+NJOY_Able is provided as-is for educational and research purposes.  
+While every effort has been made to ensure accuracy and reliability, the authors are not responsible for errors, misuse, or any consequences resulting from the use of this software.  
+
+The development of this tool was AI-assisted tools to design and documentation.
 
 ------------------------------------------------------------------------
 

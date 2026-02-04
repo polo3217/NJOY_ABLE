@@ -1,8 +1,8 @@
 # System Architecture
 
-This document details the software design patterns and internal logic of
-the **NJOY_Able** application. The system uses a hierarchical
-Object-Oriented framework designed to mirror the structure of a
+This document details the  design patterns and internal logic of
+ NJOY_Able. The system uses a hierarchical
+Object-Oriented framework. It is designed to mirror the structure of a
 nuclear data processing input deck while abstracting legacy formatting
 complexities.
 
@@ -26,10 +26,13 @@ stream.
 The `NjoyInput` class encapsulates a single fundamental data parameter
 (e.g., a floating-point value, an integer flag, or a character string).
 
-**Attributes** - `name` (str): Internal variable identifier used for
-logic references. - `value` (any): The current data stored in memory. -
-`description` (str): Technical documentation displayed via interface
-tooltips. - `rule` (callable): A validation function returning a Boolean
+**Attributes**
+ - `name` (str): Internal variable identifier used for
+logic references. 
+- `value` (any): The current data stored in memory. 
+- `description` (str): Technical documentation displayed via interface
+tooltips. 
+- `rule` (callable): A validation function returning a Boolean
 based on data integrity.
 
 **Behavior**\
@@ -45,12 +48,13 @@ of the GUI entry directly updates this object's `value` attribute.
 An `NjoyCard` represents a logical grouping of inputs, corresponding to
 a single record or line in the target input file.
 
-**Attributes** - `inputs` (list): Collection of `NjoyInput` objects. -
-`active_if` (callable): Lambda hook controlling card visibility.
+**Attributes** 
+- `inputs` (list): Collection of `NjoyInput` objects. 
+- `active_if` (callable): Lambda hook controlling card visibility.
 
-**Behavior** - Aggregates child inputs into a delimited string during
-write phase. - Evaluates `active_if()` before rendering; inactive cards
-are excluded from GUI and export.
+**Behavior** 
+- Aggregates child inputs into a delimited string during write phase. 
+- Evaluates `active_if()` before rendering; inactive cards are excluded from GUI and export.
 
 ------------------------------------------------------------------------
 
@@ -61,9 +65,11 @@ are excluded from GUI and export.
 Each processing module is defined as a class managing the data flow and
 logic for a specific calculation step.
 
-**Key Lifecycle Methods** - `__init__`: Establishes static metadata. -
-`regenerate()`: Core logic engine reconstructing card lists dynamically
-based on control variables. - `write()`: Serializes active cards into
+**Key Lifecycle Methods** 
+- `__init__`: Establishes static metadata. 
+- `regenerate()`: Core logic engine reconstructing card lists dynamically
+based on control variables. 
+- `write()`: Serializes active cards into
 formatted text blocks.
 
 ------------------------------------------------------------------------
@@ -109,14 +115,14 @@ class GenericModule:
         self.regenerate()
 ```
 
-### Logic Implementation (`regenerate()`)
+### Logic Implementation (regenerate())
 
 -   Define static cards.
 -   Read control variables.
 -   Generate dynamic cards.
 -   Register cards in `self.cards`.
 
-### Serialization (`write()`)
+### Serialization (write())
 
 -   Write module header.
 -   Loop through cards.
@@ -144,4 +150,24 @@ Handles JSON-based state preservation by extracting raw `NjoyInput`
 values and mapping them by Module/Card identifiers, enabling full
 workspace restoration including dynamic structures.
 
-------------------------------------------------------------------------
+
+### Input/Output Library Manager  
+*Location: `src/gui_components/library_panel.py`*
+
+Allow the user to load and manage external inputs and outputs files.
+
+
+---
+
+### Execution Controller  
+*Location: `src/gui_components/execution_panel.py`*
+
+Manages the runtime environment and mediates interaction between the Python GUI and the compiled NJOY executable while running the calculation.
+
+
+### Static Data Repository  
+*Location: `src/Data_bases.py`*
+
+A centralized registry of nuclear data standards used for validation, auto-completion, and reference.
+
+---
