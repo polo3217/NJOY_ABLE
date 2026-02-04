@@ -8,7 +8,6 @@ parametric studies, and visualize nuclear data processing workflows.
 
 
 
-
 ------------------------------------------------------------------------
 
 ## Overview
@@ -21,6 +20,9 @@ users to:
 -   Automate parametric studies
 -   Launch NJOY directly from the interface
 
+
+<img width="700" height="465" alt="image" src="https://github.com/user-attachments/assets/e160cf0c-614d-428d-9870-be24368197d7" />
+<img width="1399" height="930" alt="image" src="https://github.com/user-attachments/assets/91a2125e-844d-42a7-9b9a-cc7756b9f60c" />
 
 
 
