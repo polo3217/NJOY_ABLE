@@ -4,35 +4,24 @@ import os
 import subprocess
 import itertools
 import shutil
+import json  # Added import for JSON handling
 from gui_components.ui_utils import UIUtils
 
 class SequentialRunManager:
     """
     Manages the Sequential/Batch Execution Window.
-    
-    Responsibilities:
-    1. Identify variables available for sequencing.
-    2. Generate Cartesian products of input variations.
-    3. Manage the execution environment (folders, tape copying).
-    4. Execute NJOY subprocesses.
     """
 
     def __init__(self, parent_app, active_modules):
-        """
-        :param parent_app: Reference to the main NJOYInputGUI (for access to paths/settings).
-        :param active_modules: Reference to the list of currently active NJOY module objects.
-        """
         self.root = parent_app.root
         self.parent = parent_app
         self.active_modules = active_modules
         
-        # State containers
-        self.seq_map = {}       # Maps display names to input objects
-        self.defined_vars = []  # Stores user-defined sequences
-        self.planned_runs = []  # Stores the generated job matrix
+        self.seq_map = {}       
+        self.defined_vars = []  
+        self.planned_runs = []  
 
     def open_window(self):
-        """Initializes and displays the Sequential Run Window."""
         if not self.active_modules:
             messagebox.showwarning("Project Empty", "Please add modules to the project first.")
             return
@@ -41,13 +30,11 @@ class SequentialRunManager:
         self.win.title("Sequential Input Generation & Runner")
         self.win.geometry("1000x750")
 
-        # --- Layout Splitting ---
-        # Left Pane: Variable Setup (Fixed Width)
+        # Layout Splitting
         left_pane = tk.Frame(self.win, padx=10, pady=10, width=320)
         left_pane.pack(side="left", fill="y")
         left_pane.pack_propagate(False)
 
-        # Right Pane: Table and Execution (Expandable)
         right_pane = tk.Frame(self.win, padx=10, pady=10)
         right_pane.pack(side="right", fill="both", expand=True)
 
@@ -56,9 +43,6 @@ class SequentialRunManager:
         self._build_job_table_ui(right_pane)
 
     def _build_variable_definition_ui(self, parent):
-        """Builds the Left Panel: Target selection and value input."""
-        
-        # --- Header with Help ---
         h_frame = tk.Frame(parent)
         h_frame.pack(fill="x", pady=(0, 10))
         
@@ -75,7 +59,6 @@ class SequentialRunManager:
         tk.Button(h_frame, text="?", width=2, relief="flat", fg="blue", font=("Arial", 8, "bold"), 
                   command=show_step1_help).pack(side="left", padx=5)
 
-        # 1. Populate Dropdown with Active Inputs
         tk.Label(parent, text="Select Active Input:", font=("Segoe UI", 9)).pack(anchor="w")
         
         combo_values = []
@@ -83,14 +66,12 @@ class SequentialRunManager:
         
         for m_idx, mod in enumerate(self.active_modules):
             for card in mod.cards:
-                # Skip inactive cards
                 if card.active_if is not None:
                     try: 
                         if not card.active_if(): continue
                     except: continue 
                 
                 for inp in card.inputs:
-                    # Create a unique readable key
                     key = f"[{m_idx+1}] {mod.name.upper()} > {card.name} > {inp.name}"
                     self.seq_map[key] = (m_idx, card.name, inp.name, inp)
                     combo_values.append(key)
@@ -100,29 +81,22 @@ class SequentialRunManager:
         self.cb_target.pack(fill="x", pady=(0, 10))
         if combo_values: self.cb_target.current(0)
 
-        # 2. Values Input Area
         tk.Label(parent, text="Values (Space separated):", font=("Segoe UI", 9)).pack(anchor="w")
         self.txt_seq = tk.Text(parent, height=5, font=("Consolas", 9), relief="groove", borderwidth=1)
         self.txt_seq.pack(fill="x", pady=(0, 2))
 
-        # Helper: Add Files Button
         tk.Button(parent, text="🗂 Add Files", command=self._add_files_helper, bg="#e0e0e0", font=("Segoe UI", 8)).pack(anchor="e", pady=(0, 10))
 
-        # 3. List of Added Variables
         tk.Label(parent, text="Variables to Vary:", font=("Segoe UI", 9, "bold")).pack(anchor="w")
         self.lb_vars = tk.Listbox(parent, height=10, bg="#f0f0f0")
         self.lb_vars.pack(fill="both", expand=True, pady=(0, 5))
 
-        # Action Buttons
         btn_frame = tk.Frame(parent)
         btn_frame.pack(fill="x")
         tk.Button(btn_frame, text="Add Variable", command=self._add_variable_logic, bg="#e8f5e9").pack(side="left", fill="x", expand=True, padx=2)
         tk.Button(btn_frame, text="Remove Selected", command=self._remove_variable_logic, bg="#ffebee").pack(side="left", fill="x", expand=True, padx=2)
 
     def _build_configuration_ui(self, parent):
-        """Builds Top-Right Panel: Paths and settings."""
-        
-        # --- Header with Help ---
         h_frame = tk.Frame(parent)
         h_frame.pack(fill="x")
         
@@ -131,7 +105,7 @@ class SequentialRunManager:
         def show_step2_help():
             desc = (
                 "Output Directory: All run folders will be created here.\n"
-                "NJOY Executable: Path to your installed NJOY executable."
+                "NJOY Executable: Path to your installed NJOY binary."
             )
             UIUtils.show_info(self.win, "Step 2: Configuration", desc, "")
             
@@ -141,14 +115,12 @@ class SequentialRunManager:
         cfg_frame = tk.Frame(parent, bg="#f9f9f9", bd=1, relief="sunken", padx=10, pady=10)
         cfg_frame.pack(fill="x", pady=(5, 15))
 
-        # Output Directory
         tk.Label(cfg_frame, text="Output Directory:", bg="#f9f9f9").grid(row=0, column=0, sticky="w")
         self.ent_outdir = tk.Entry(cfg_frame)
         self.ent_outdir.insert(0, self.parent.output_dir_path)
         self.ent_outdir.grid(row=0, column=1, sticky="ew", padx=5)
         tk.Button(cfg_frame, text="...", width=3, command=lambda: self._browse_dir(self.ent_outdir)).grid(row=0, column=2)
 
-        # Executable Path
         tk.Label(cfg_frame, text="NJOY Executable:", bg="#f9f9f9").grid(row=1, column=0, sticky="w", pady=5)
         self.ent_exe = tk.Entry(cfg_frame)
         self.ent_exe.insert(0, self.parent.njoy_exe_path)
@@ -158,9 +130,6 @@ class SequentialRunManager:
         cfg_frame.columnconfigure(1, weight=1)
 
     def _build_job_table_ui(self, parent):
-        """Builds Bottom-Right Panel: The Grid and Execution controls."""
-        
-        # --- Header with Help ---
         h_frame = tk.Frame(parent)
         h_frame.pack(fill="x")
         
@@ -177,13 +146,11 @@ class SequentialRunManager:
         tk.Button(h_frame, text="?", width=2, relief="flat", fg="blue", font=("Arial", 8, "bold"), 
                   command=show_step3_help).pack(side="left", padx=5)
 
-        # Table Controls
         btn_frame = tk.Frame(parent)
         btn_frame.pack(fill="x", pady=2)
         tk.Button(btn_frame, text="Generate Combinations", command=self._generate_table_logic, bg="#e3f2fd").pack(side="left", padx=2)
         tk.Button(btn_frame, text="Delete Selected Rows", command=self._delete_rows_logic, bg="#ffebee").pack(side="left", padx=2)
 
-        # Treeview (Grid)
         cols = ("ID", "Parameters", "Output Folder")
         self.tree = ttk.Treeview(parent, columns=cols, show="headings", selectmode="extended")
         self.tree.heading("ID", text="#")
@@ -198,7 +165,6 @@ class SequentialRunManager:
         self.tree.pack(side="top", fill="both", expand=True)
         vsb.pack(side="right", fill="y", before=self.tree)
 
-        # Launch Controls
         self.lbl_status = tk.Label(parent, text="Waiting...", fg="gray", font=("Segoe UI", 9))
         self.lbl_status.pack(pady=5)
         
@@ -232,11 +198,9 @@ class SequentialRunManager:
         if not display or not raw_vals:
             return
         
-        # Clean splitting (handle newlines and commas)
         clean_vals = raw_vals.replace(",", " ").replace("\n", " ").split()
         if not clean_vals: return
 
-        # Prevent duplicates
         for v in self.defined_vars:
             if v["display"] == display:
                 messagebox.showwarning("Warning", "Variable already added.")
@@ -265,13 +229,11 @@ class SequentialRunManager:
         self.defined_vars.pop(idx)
 
     def _generate_table_logic(self):
-        # Clear table
         for row in self.tree.get_children(): self.tree.delete(row)
         self.planned_runs = []
         
         if not self.defined_vars: return
 
-        # Cartesian Product Logic
         all_lists = [v["values"] for v in self.defined_vars]
         combinations = list(itertools.product(*all_lists))
         
@@ -284,11 +246,9 @@ class SequentialRunManager:
                 var_def = self.defined_vars[j]
                 var_name = var_def["display"].split(">")[-1].strip()
                 
-                # Sanitize filename
                 safe_val = os.path.basename(str(val)).replace(".", "p")
                 folder_parts.append(f"{var_name}_{safe_val}")
                 
-                # Description
                 display_val = os.path.basename(val) if var_def["is_file_input"] else val
                 desc_parts.append(f"{var_name}={display_val}")
                 
@@ -300,9 +260,7 @@ class SequentialRunManager:
                 })
             
             folder_name = "_".join(folder_parts)
-            
             self.tree.insert("", "end", iid=str(i), values=(i+1, ", ".join(desc_parts), folder_name))
-            
             self.planned_runs.append({
                 "id": i+1,
                 "folder": folder_name,
@@ -336,7 +294,6 @@ class SequentialRunManager:
 
         if not messagebox.askyesno("Confirm", f"Launch {len(self.planned_runs)} jobs?"): return
 
-        # 1. SNAPSHOT CURRENT STATE (Backup)
         backup = self._create_state_backup()
 
         success = 0
@@ -345,19 +302,15 @@ class SequentialRunManager:
                 self.lbl_status.config(text=f"Running Job {run['id']}...", fg="blue")
                 self.win.update()
 
-                # A. Apply Variables
                 self._apply_run_config(run["config"])
-
-                # B. Generate Input
                 full_text = self._generate_full_input()
-
-                # C. Setup Environment & Execute
-                if self._execute_single_run(out_root, run["folder"], full_text, exe, run["config"]):
+                
+                # --- CHANGED: Passing the active_modules to save the JSON state ---
+                if self._execute_single_run(out_root, run["folder"], full_text, exe, run["config"], self.active_modules):
                     success += 1
 
             messagebox.showinfo("Done", f"Batch completed.\nSuccessful: {success}/{len(self.planned_runs)}")
             
-            # Open Folder
             if os.name == 'nt': os.startfile(out_root)
             else: 
                 try: subprocess.Popen(['xdg-open', out_root])
@@ -366,7 +319,6 @@ class SequentialRunManager:
         except Exception as e:
             messagebox.showerror("Fatal Error", str(e))
         finally:
-            # D. Restore Original State
             self._restore_state(backup)
             self.lbl_status.config(text="Idle", fg="black")
 
@@ -393,17 +345,13 @@ class SequentialRunManager:
                             if inp.name in saved[c.name]:
                                 inp.value = saved[c.name][inp.name]
                 if hasattr(mod, 'regenerate'): mod.regenerate()
-        
-        # Refresh main GUI
         self.parent.update_preview()
         self.parent.reorder_modules_layout()
 
     def _apply_run_config(self, config):
-        """Applies a specific run configuration to the active modules."""
         for cfg in config:
             m_idx, c_name, i_name = cfg["key"]
             val = cfg["val"]
-            # Skip file inputs here (they are handled during file copy)
             if not cfg["is_file"]:
                 if m_idx < len(self.active_modules):
                     mod = self.active_modules[m_idx]
@@ -421,27 +369,30 @@ class SequentialRunManager:
         full_text += "stop\n"
         return full_text
 
-    def _execute_single_run(self, root, folder, content, exe, config):
+    def _execute_single_run(self, root, folder, content, exe, config, modules_snapshot):
         job_dir = os.path.join(root, folder)
         os.makedirs(job_dir, exist_ok=True)
 
-        # 1. Copy Environment Tapes (Dependencies)
+        # 1. Copy Environment Tapes
         for unit, path in self.parent.user_tapes.items():
             if os.path.exists(path):
                 try: shutil.copy(path, os.path.join(job_dir, f"tape{unit}"))
                 except: pass
 
-        # 2. Copy Variable File Inputs (if any)
+        # 2. Copy Variable File Inputs
         for cfg in config:
             if cfg["is_file"] and os.path.exists(cfg["val"]):
                 dest = os.path.join(job_dir, f"tape{cfg['base_unit']}")
                 try: shutil.copy(cfg["val"], dest)
                 except Exception as e: print(f"Copy error: {e}")
 
-        # 3. Write Input
+        # 3. Write Input File
         with open(os.path.join(job_dir, "input.inp"), "w") as f: f.write(content)
 
-        # 4. Run
+        # 4. NEW: Save Project State JSON
+        self._save_run_state_json(job_dir, modules_snapshot)
+
+        # 5. Run NJOY
         try:
             with open(os.path.join(job_dir, "output.out"), "w") as fout:
                 subprocess.run([exe], input=content.encode('utf-8'), stdout=fout, stderr=subprocess.STDOUT, cwd=job_dir, check=True)
@@ -449,3 +400,37 @@ class SequentialRunManager:
         except Exception as e:
             print(f"Execution failed: {e}")
             return False
+
+    def _save_run_state_json(self, job_dir, modules):
+        """
+        Saves the current configuration of all modules to a project.json file 
+        within the run directory.
+        """
+        data = []
+        # We need the class map to identify the module type string
+        from gui_app import AVAILABLE_MODULES 
+        
+        for mod in modules:
+            mod_type_key = None
+            for key, cls in AVAILABLE_MODULES.items():
+                if isinstance(mod, cls):
+                    mod_type_key = key
+                    break
+            
+            if not mod_type_key: continue
+
+            cards_data = {}
+            for card in mod.cards:
+                inputs_data = {}
+                for inp in card.inputs:
+                    inputs_data[inp.name] = inp.value
+                cards_data[card.name] = inputs_data
+            
+            data.append({"type": mod_type_key, "cards": cards_data})
+
+        json_path = os.path.join(job_dir, "project_state.json")
+        try:
+            with open(json_path, "w") as f:
+                json.dump(data, f, indent=4)
+        except Exception as e:
+            print(f"Failed to save state JSON: {e}")

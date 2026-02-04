@@ -50,7 +50,7 @@ class NJOYInputGUI:
         self._setup_view()
 
     def _setup_view(self):
-        self.root.title("NJOY Input Builder")
+        self.root.title("NJOY_Able")
         self.root.geometry("1400x900") 
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(1, weight=1)

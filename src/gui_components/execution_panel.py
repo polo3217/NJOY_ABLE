@@ -4,8 +4,9 @@ import os
 import shutil
 import subprocess
 import threading
+import json  # Required for state saving
 
-class ExecutionPanel(ttk.LabelFrame): # Changed to ttk.LabelFrame
+class ExecutionPanel(ttk.LabelFrame):
     def __init__(self, parent_widget, controller):
         super().__init__(parent_widget, text="3. Execution Manager", padding=5)
         self.controller = controller
@@ -14,7 +15,7 @@ class ExecutionPanel(ttk.LabelFrame): # Changed to ttk.LabelFrame
     def _setup_ui(self):
         # Configure grid for resizing
         self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1) # Main content area
+        self.rowconfigure(0, weight=1)
         
         main_content = ttk.Frame(self)
         main_content.pack(fill="both", expand=True)
@@ -100,29 +101,41 @@ class ExecutionPanel(ttk.LabelFrame): # Changed to ttk.LabelFrame
                 return
 
         self._toggle_ui_state(is_running=True)
+        
+        # Capture current state from Main Thread before starting Worker Thread
         inp_content = self.controller.preview_text.get("1.0", tk.END)
         user_tapes = self.controller.user_tapes.copy()
+        active_modules = self.controller.active_modules # Reference is okay here
 
-        thread = threading.Thread(target=self._run_njoy_process, args=(exe, out_dir, inp_content, user_tapes))
+        thread = threading.Thread(target=self._run_njoy_process, args=(exe, out_dir, inp_content, user_tapes, active_modules))
         thread.daemon = True
         thread.start()
 
-    def _run_njoy_process(self, exe, out_dir, inp_content, user_tapes):
+    def _run_njoy_process(self, exe, out_dir, inp_content, user_tapes, active_modules):
         result = {"success": False, "msg": "", "returncode": None}
         inp_path = os.path.join(out_dir, "input.inp")
         
         try:
+            # 1. Write Input File
             with open(inp_path, "w") as f: f.write(inp_content)
+            
+            # 2. Copy Tape Files
             for unit, src_path in user_tapes.items():
                 dst_name = f"tape{unit}"
                 dst_path = os.path.join(out_dir, dst_name)
                 if os.path.exists(dst_path): os.remove(dst_path)
-                shutil.copy(src_path, dst_path)
+                try: shutil.copy(src_path, dst_path)
+                except: pass
 
+            # 3. NEW: Save Project State JSON
+            self._save_run_state_json(out_dir, active_modules)
+
+            # 4. Execute Subprocess
             cmd = [exe]
             with open(inp_path, "r") as stdin_f:
                 proc = subprocess.run(cmd, stdin=stdin_f, cwd=out_dir, capture_output=True, text=True)
             
+            # 5. Write Logs
             with open(os.path.join(out_dir, "output.log"), "w") as log: log.write(proc.stdout)
             if proc.stderr:
                 with open(os.path.join(out_dir, "error.log"), "w") as err: err.write(proc.stderr)
@@ -140,7 +153,42 @@ class ExecutionPanel(ttk.LabelFrame): # Changed to ttk.LabelFrame
             result["success"] = False
             result["msg"] = f"System Error:\n{str(e)}"
 
+        # Schedule UI update on Main Thread
         self.after(0, lambda: self._on_process_complete(result))
+
+    def _save_run_state_json(self, job_dir, modules):
+        """
+        Saves the current configuration of all modules to a project_state.json file.
+        This allows reproducibility of the single run.
+        """
+        data = []
+        # Dynamic import to avoid circular dependency issues at top level
+        from gui_app import AVAILABLE_MODULES 
+        
+        for mod in modules:
+            mod_type_key = None
+            for key, cls in AVAILABLE_MODULES.items():
+                if isinstance(mod, cls):
+                    mod_type_key = key
+                    break
+            
+            if not mod_type_key: continue
+
+            cards_data = {}
+            for card in mod.cards:
+                inputs_data = {}
+                for inp in card.inputs:
+                    inputs_data[inp.name] = inp.value
+                cards_data[card.name] = inputs_data
+            
+            data.append({"type": mod_type_key, "cards": cards_data})
+
+        json_path = os.path.join(job_dir, "project_state.json")
+        try:
+            with open(json_path, "w") as f:
+                json.dump(data, f, indent=4)
+        except Exception as e:
+            print(f"Failed to save state JSON: {e}")
 
     def _on_process_complete(self, result):
         self._toggle_ui_state(is_running=False)
