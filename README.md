@@ -36,9 +36,9 @@ and associating every card and input with contextual descriptions.
 
 ### 2. Automation and Standardization
 
-Ensure data integrity through background validation, manage intra-module
+Ensure input consistency through background validation, manage intra-module
 dependencies dynamically, automate sequence generation for sensitivity
-studies, and support direct execution.
+studies, and support direct execution from the GUI.
 
 ### 3. Workflow Visualization
 
