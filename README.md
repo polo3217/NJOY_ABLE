@@ -3,7 +3,7 @@
 > **Enable and Enjoy**
 
 A graphical user interface for the **NJOY Nuclear Data Processing
-System**, designed to simplify input deck generation, automate
+Code**, designed to simplify input deck generation, automate
 parametric studies, and visualize nuclear data processing workflows.
 
 
