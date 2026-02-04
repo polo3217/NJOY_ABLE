@@ -151,10 +151,11 @@ Contributions and feedbacks are very welcome, including:
 
 ## Disclaimer
 
-NJOY_Able is provided as-is for educational and research purposes.  
+NJOY_Able is provided as-is for educational and research purposes. 
+
 While every effort has been made to ensure accuracy and reliability, the authors are not responsible for errors, misuse, or any consequences resulting from the use of this software.  
 
-The development of this tool was AI-assisted tools to design and documentation.
+The development of this tool was AI-assisted for design and documentation.
 
 ------------------------------------------------------------------------
 
