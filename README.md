@@ -153,6 +153,10 @@ Contributions and feedbacks are very welcome, including:
 -   Additional NJOY modules (e.g., LEAPR)
 -   Documentation enhancements
 
+------------------------------------------------------------------------
+## Additional information
+
+Developed at ETH Zuerich and Paul-Scherrer-Institure, Switzerland
 
 ------------------------------------------------------------------------
 
