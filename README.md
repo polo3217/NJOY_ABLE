@@ -49,6 +49,8 @@ allowing users to verify processing-chain coherence.
 
 ## Quick Start
 
+You may either download the main.exe file and execute it or alternatively :
+
 ``` bash
 git clone https://github.com/polo3217/NJOY_ABLE.git
 cd NJOY_Able
@@ -83,6 +85,8 @@ python main.py
 │   └── comp.py                 # Standalone Diff Tool
 │
 ├── output_exemple/             # Exemple of NJOY_ABLE output
+│
+├── main.exe/                   # Executable that compile the whole app
 │
 └── README.md
 ```
