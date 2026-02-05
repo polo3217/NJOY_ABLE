@@ -1,19 +1,21 @@
-# NJOY_Able
+<img width="2816" height="553" alt="njoy_able" src="https://github.com/user-attachments/assets/ef2b47fd-a274-4505-9eb2-8c6e0f88f392" />
 
 > **Enable and Enjoy**
 
-A graphical user interface for the **NJOY Nuclear Data Processing
+
+
+NJOY_ABLE is graphical user interface for the **NJOY Nuclear Data Processing
 Code**, designed to simplify input deck generation, automate
 parametric studies, and visualize nuclear data processing workflows.
 
-<img width="2816" height="646" alt="njoy_able" src="https://github.com/user-attachments/assets/247b50b6-6b84-4fb1-902a-067ccc762823" />
+
 
 
 ------------------------------------------------------------------------
 
 ## Overview
 
-NJOY_Able provides an intuitive GUI layer on top of NJOY2016, enabling
+NJOY_ABLE provides an intuitive GUI layer on top of NJOY2016, enabling
 users to:
 
 -   Graphically construct NJOY input decks
@@ -165,7 +167,7 @@ Developed at ETH Zuerich and Paul-Scherrer-Institute, Switzerland
 
 ## Disclaimer
 
-NJOY_Able is provided as-is for educational and research purposes. 
+NJOY_ABLE is provided as-is for educational and research purposes. 
 
 While every effort has been made to ensure accuracy and reliability, the authors are not responsible for errors, misuse, or any consequences resulting from the use of this software.  
 
