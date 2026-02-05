@@ -156,7 +156,7 @@ Contributions and feedbacks are very welcome, including:
 ------------------------------------------------------------------------
 ## Additional information
 
-Developed at ETH Zuerich and Paul-Scherrer-Institure, Switzerland
+Developed at ETH Zuerich and Paul-Scherrer-Institute, Switzerland
 
 ------------------------------------------------------------------------
 
