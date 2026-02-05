@@ -6,6 +6,7 @@ A graphical user interface for the **NJOY Nuclear Data Processing
 Code**, designed to simplify input deck generation, automate
 parametric studies, and visualize nuclear data processing workflows.
 
+<img width="2816" height="646" alt="njoy_able" src="https://github.com/user-attachments/assets/247b50b6-6b84-4fb1-902a-067ccc762823" />
 
 
 ------------------------------------------------------------------------
